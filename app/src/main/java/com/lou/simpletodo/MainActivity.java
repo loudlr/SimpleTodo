@@ -1,7 +1,8 @@
 package com.lou.simpletodo;
 
-import android.support.v7.app.ActionBarActivity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -9,6 +10,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import org.apache.commons.io.FileUtils;
 
@@ -18,6 +21,7 @@ import java.util.ArrayList;
 
 
 public class MainActivity extends ActionBarActivity {
+    private final int EDIT_REQUEST_CODE = 10;
     ArrayList<String> _items;
     ArrayAdapter<String> _itemsAdapter;
     ListView _lvItems;
@@ -79,6 +83,28 @@ public class MainActivity extends ActionBarActivity {
                         return true;
                     }
                 });
+
+        _lvItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id){
+                Intent i = new Intent(MainActivity.this, EditItemActivity.class);
+                i.putExtra("item", _lvItems.getItemAtPosition(position).toString());
+                i.putExtra("item_num", position);
+                startActivityForResult(i, EDIT_REQUEST_CODE);
+            }
+        });
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == EDIT_REQUEST_CODE) {
+            String item = data.getExtras().getString("item");
+            int item_num = data.getExtras().getInt("item_num");
+            _items.set(item_num, item);
+            _itemsAdapter.notifyDataSetChanged();
+            writeItems();
+        }
     }
 
     private void readItems() {
